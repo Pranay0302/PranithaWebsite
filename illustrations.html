@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Illustrations · Pranitha Andra</title>
+  <meta name="description" content="Illustrations by Pranitha Andra: environments, studies, and photobashing, building believable spaces, light, and atmosphere." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav__brand" href="index.html">HOME</a>
+    <div class="nav__links">
+      <a href="visual-dev.html">Visual&nbsp;Dev</a>
+      <a href="design.html">Design</a>
+      <a href="illustrations.html" aria-current="page">Illustrations</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <main id="work" class="workpage" data-section="illustrations" data-autoopen="true">
+    <h1 class="sr-only">Illustrations</h1>
+    <!-- projects injected by main.js -->
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer__grid">
+        <h2 class="footer__cta reveal">Let's make<br />something. <a href="mailto:pranitha.andra@gmail.com">Get in touch →</a></h2>
+        <div class="footer__links reveal">
+          <a href="https://www.instagram.com/pranitha_andra/" target="_blank" rel="noopener">Instagram</a>
+          <a href="https://www.behance.net/pranithaandra" target="_blank" rel="noopener">Behance</a>
+          <a href="about.html">About</a>
+        </div>
+      </div>
+      <p class="footer__fine">© <span id="year"></span> Pranitha Andra · San Jose, CA</p>
+    </div>
+  </footer>
+
+  <!-- Project viewer (scrollable) -->
+  <div class="lb" id="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Project images">
+    <button class="lb__btn lb__close" aria-label="Close">✕</button>
+    <div class="lb__scroll">
+      <p class="lb__cap"></p>
+      <div class="lb__stack"></div>
+    </div>
+  </div>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
