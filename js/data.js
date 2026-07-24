@@ -83,6 +83,7 @@ const PORTFOLIO = {
           title: "Illustrations",
           note: "Studies & photobashing",
           cover: "images/film-studies/05.jpg",
+          layout: "grid",     // masonry grid viewer + click-to-expand, like Thayyam
           images: [
             "images/portrait-study/01.png",
             "images/portrait-study/02.jpg",
@@ -99,6 +100,27 @@ const PORTFOLIO = {
             "images/photobashing/02.webp",
             "images/photobashing/03.webp",
           ],
+        },
+      ],
+    },
+
+    {
+      id: "film",
+      num: "04",
+      title: "Film",
+      blurb:
+        "Concept art for film: developing the world, mood, and color of Thayyam.",
+      collections: [
+        {
+          title: "Thayyam",
+          note: "Concept art",
+          cover: "images/concepts/concept-1.jpeg",
+          layout: "grid",     // render the viewer as a gallery grid
+          cursor: "spark",    // warm sparks instead of ink while this viewer is open
+          images: img("concepts", [
+            "concept-1.jpeg", "concept-2.jpeg", "concept-3.jpeg", "concept-4.jpeg",
+            "concept-5.jpeg", "concept-6.jpeg", "concept-7.jpeg", "concept-8.jpeg", "concept-9.jpeg"
+          ]),
         },
       ],
     },

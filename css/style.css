@@ -72,6 +72,8 @@ a { color: inherit; text-decoration: none; }
   pointer-events: none;
   z-index: 95;
 }
+/* In spark mode the trail must render above the open project viewer (z-index 100) */
+.ink-canvas--spark { z-index: 110; }
 
 /* ---------- Nav ---------- */
 .nav {
@@ -355,6 +357,57 @@ a { color: inherit; text-decoration: none; }
 }
 .lb__img.in { opacity: 1; transform: none; }
 .lb__video { width: min(100%, 1100px); height: auto; background: #000; }
+
+/* Gallery grid variant (e.g. Thayyam concept art): whole images, masonry board */
+.lb__stack--grid {
+  display: block;
+  column-count: 2;
+  column-gap: clamp(12px, 2.4vw, 28px);
+  max-width: 1180px;
+  width: 100%;
+}
+@media (min-width: 960px) {
+  .lb__stack--grid { column-count: 3; }
+}
+.lb__stack--grid .lb__img {
+  width: 100%;
+  max-height: none;
+  margin: 0 0 clamp(12px, 2.4vw, 28px);
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  cursor: zoom-in;
+  transition: opacity 0.6s var(--ease), transform 0.35s var(--ease);
+}
+.lb__stack--grid .lb__img.in:hover { transform: scale(1.015); }
+
+/* Click-to-expand overlay for grid gallery images */
+.lb__zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: none;
+  place-items: center;
+  padding: clamp(16px, 5vw, 72px);
+  background: rgba(10, 8, 6, 0.72);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  cursor: zoom-out;
+}
+.lb__zoom.open { display: grid; }
+.lb__zoom img {
+  max-width: 100%;
+  max-height: 92vh;
+  width: auto;
+  object-fit: contain;
+  border-radius: 3px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+  animation: zoomIn 0.28s var(--ease);
+}
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
 .lb__btn {
   position: fixed;
   z-index: 2;
@@ -394,10 +447,33 @@ a { color: inherit; text-decoration: none; }
 }
 @media (min-width: 820px) {
   .about__cols { grid-template-columns: 1.4fr 1fr; }
+  /* Lift the side portrait slightly above the intro's top line */
+  .about__photo { margin-top: clamp(-48px, -2.6vw, -22px); }
+}
+/* Side portrait: B&W-on-white subject blended into the paper background */
+.about__photo {
+  margin: 0;
+  aspect-ratio: 4 / 5;
+}
+.about__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;   /* trim the white headroom so the subject sits up beside the bio */
+  mix-blend-mode: multiply;
 }
 .about__body p { color: #3a352d; margin: 0 0 1.2em; font-size: 1.06rem; }
 .about__body p:last-child { margin-bottom: 0; }
-.about__aside h3 {
+/* Focus / Based in / Connect: a tidy row beneath the introduction */
+.about__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(22px, 3vw, 44px);
+  margin-top: clamp(36px, 5vw, 56px);
+  padding-top: clamp(30px, 4vw, 48px);
+  border-top: 1px solid var(--faint);
+}
+.about__meta h3 {
   font-family: var(--sans);
   font-size: 0.78rem;
   letter-spacing: 0.18em;
@@ -405,10 +481,10 @@ a { color: inherit; text-decoration: none; }
   color: var(--muted);
   margin: 0 0 12px;
 }
-.about__aside ul { list-style: none; margin: 0 0 32px; padding: 0; }
-.about__aside li { padding: 7px 0; border-bottom: 1px solid var(--faint); font-size: 0.98rem; }
-.about__aside a { transition: color 0.25s var(--ease); }
-.about__aside a:hover { color: var(--accent); }
+.about__meta ul { list-style: none; margin: 0; padding: 0; }
+.about__meta li { padding: 7px 0; border-bottom: 1px solid var(--faint); font-size: 0.98rem; }
+.about__meta a { transition: color 0.25s var(--ease); }
+.about__meta a:hover { color: var(--accent); }
 .about__banner {
   margin-top: clamp(56px, 8vw, 100px);
   aspect-ratio: 21 / 8;
