@@ -278,6 +278,113 @@ a { color: inherit; text-decoration: none; }
 .card:hover .card__count,
 .card:focus-visible .card__count { transform: none; }
 
+/* ---------- Sketchbook (home) ---------- */
+.sketchbook__title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 clamp(24px, 4vw, 46px);
+}
+.flip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(8px, 2vw, 24px);
+}
+.flip__stage {
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  aspect-ratio: 1.81 / 1;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--bg-2);
+  box-shadow: 0 24px 60px rgba(28, 26, 23, 0.14);
+  cursor: grab;
+  touch-action: pan-y;                 /* let vertical scroll through, capture horizontal swipe */
+  user-select: none;
+  -webkit-user-select: none;
+  perspective: 1500px;                 /* depth for the page fold */
+}
+.flip__stage:active { cursor: grabbing; }
+/* The settled page, always visible beneath any turning leaf */
+.flip__base {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+/* A turning leaf: two faces hinged on the left spine, folding in 3D */
+.flip__leaf {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  will-change: transform;
+  pointer-events: none;
+}
+.flip__leaf-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg-2);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip__leaf-front { transform: rotateY(0deg); }
+.flip__leaf-back  { transform: rotateY(180deg); }   /* blank page back */
+.flip__leaf-front img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.flip__leaf-shade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(20, 18, 15, 0.4), rgba(20, 18, 15, 0) 60%);
+}
+.flip__leaf-back .flip__leaf-shade {
+  background: linear-gradient(270deg, rgba(20, 18, 15, 0.4), rgba(20, 18, 15, 0) 60%);
+}
+.flip__nav {
+  flex: none;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--faint);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 1.5rem; line-height: 1;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease), transform 0.2s var(--ease);
+}
+.flip__nav:hover { background: var(--bg-2); border-color: var(--accent); color: var(--accent); }
+.flip__nav:active { transform: scale(0.92); }
+.flip__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: clamp(16px, 2.5vw, 26px);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.flip__counter { color: var(--ink); font-variant-numeric: tabular-nums; }
+.flip__hint { font-size: 0.72rem; }
+@media (max-width: 620px) {
+  .flip__hint { display: none; }
+  .flip__nav { width: 40px; height: 40px; font-size: 1.3rem; }
+}
+
 /* ---------- Footer ---------- */
 .footer {
   border-top: 1px solid var(--faint);
@@ -406,7 +513,7 @@ a { color: inherit; text-decoration: none; }
 .lb__zoom {
   position: fixed;
   inset: 0;
-  z-index: 3;
+  z-index: 130;   /* body-level: above the viewer (100) and spark canvas (110) */
   display: none;
   place-items: center;
   padding: clamp(16px, 5vw, 72px);

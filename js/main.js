@@ -7,6 +7,183 @@
 (function () {
   "use strict";
 
+  /* ---------- Shared full-screen image zoom (grid viewers + sketchbook) ---------- */
+  const zoomEl = document.createElement("div");
+  zoomEl.className = "lb__zoom";
+  zoomEl.setAttribute("aria-hidden", "true");
+  zoomEl.innerHTML = '<img alt="" />';
+  document.body.appendChild(zoomEl);
+  const zoomImg = zoomEl.querySelector("img");
+  const openZoom = (src) => {
+    if (!src) return;
+    zoomImg.src = src;
+    zoomEl.classList.add("open");
+    zoomEl.setAttribute("aria-hidden", "false");
+  };
+  const closeZoom = () => {
+    zoomEl.classList.remove("open");
+    zoomEl.setAttribute("aria-hidden", "true");
+    zoomImg.removeAttribute("src");
+  };
+  zoomEl.addEventListener("click", closeZoom);
+
+  /* ---------- Sketchbook flip-through (built on the home page) ---------- */
+  function buildSketchbook(images) {
+    const N = images.length;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const pad = (n) => String(n).padStart(2, "0");
+    const at = (i) => images[((i % N) + N) % N];
+
+    const sec = document.createElement("section");
+    sec.className = "section sketchbook reveal";
+    sec.innerHTML =
+      `<div class="wrap">
+        <h2 class="sketchbook__title">My sketchbook</h2>
+        <div class="flip">
+          <button class="flip__nav flip__prev" type="button" aria-label="Previous page">&lsaquo;</button>
+          <div class="flip__stage">
+            <img class="flip__base" alt="Sketchbook page 1" draggable="false" />
+          </div>
+          <button class="flip__nav flip__next" type="button" aria-label="Next page">&rsaquo;</button>
+        </div>
+        <div class="flip__meta">
+          <span class="flip__counter"></span>
+          <span class="flip__hint">drag to turn the page · click to expand</span>
+        </div>
+      </div>`;
+
+    const stage = sec.querySelector(".flip__stage");
+    const base = sec.querySelector(".flip__base");
+    const counter = sec.querySelector(".flip__counter");
+
+    let index = 0;
+    let busy = false;
+    const setMeta = () => {
+      counter.textContent = `${pad(index + 1)} / ${pad(N)}`;
+      base.alt = `Sketchbook page ${index + 1}`;
+    };
+    const preload = (i) => { const im = new Image(); im.src = at(i); };
+
+    base.src = images[0];
+    setMeta();
+    if (N > 1) { preload(1); preload(-1); }
+
+    // A leaf pivots on the left "spine": next folds 0deg -> -180deg, prev -180deg -> 0deg.
+    const START = (dir) => (dir > 0 ? 0 : -180);
+    const END = (dir) => (dir > 0 ? -180 : 0);
+
+    function setAngle(leaf, angle) {
+      leaf._angle = angle;
+      leaf.style.transform = `rotateY(${angle}deg)`;
+      const shade = Math.sin((Math.abs(angle) / 180) * Math.PI) * 0.55;   // darkest edge-on
+      leaf._shades.forEach((s) => { s.style.opacity = shade; });
+    }
+
+    // Build the flipping leaf: carries the current page (next) or the incoming page (prev).
+    function begin(dir) {
+      const destIndex = index + dir;
+      const prevBaseSrc = base.src;
+      const frontSrc = dir > 0 ? at(index) : at(destIndex);
+      const leaf = document.createElement("div");
+      leaf.className = "flip__leaf";
+      leaf.innerHTML =
+        `<div class="flip__leaf-face flip__leaf-front">
+           <img src="${frontSrc}" alt="" draggable="false" /><span class="flip__leaf-shade"></span>
+         </div>
+         <div class="flip__leaf-face flip__leaf-back"><span class="flip__leaf-shade"></span></div>`;
+      leaf._shades = leaf.querySelectorAll(".flip__leaf-shade");
+      stage.appendChild(leaf);
+      if (dir > 0) base.src = at(destIndex);        // reveal destination beneath the lifting page
+      setAngle(leaf, START(dir));
+      return { leaf, dir, destIndex, prevBaseSrc };
+    }
+
+    function tween(st, complete) {
+      const from = st.leaf._angle;
+      const target = complete ? END(st.dir) : START(st.dir);
+      const dur = 540;
+      const t0 = performance.now();
+      const ease = (t) => 1 - Math.pow(1 - t, 3);   // easeOutCubic
+      const step = (now) => {
+        let t = (now - t0) / dur; if (t > 1) t = 1;
+        setAngle(st.leaf, from + (target - from) * ease(t));
+        if (t < 1) { requestAnimationFrame(step); return; }
+        if (complete) {
+          if (st.dir < 0) base.src = at(st.destIndex);   // prev: reveal previous now
+          index = ((st.destIndex % N) + N) % N;
+          setMeta();
+          preload(index + 1); preload(index - 1);
+        } else if (st.dir > 0) {
+          base.src = st.prevBaseSrc;                     // canceled next: restore current
+        }
+        st.leaf.remove();
+        busy = false;
+      };
+      requestAnimationFrame(step);
+    }
+
+    function flip(dir) {
+      if (busy || N < 2) return;
+      if (reduce) {
+        index = ((index + dir) % N + N) % N;
+        base.src = at(index); setMeta();
+        preload(index + 1); preload(index - 1);
+        return;
+      }
+      busy = true;
+      tween(begin(dir), true);
+    }
+
+    sec.querySelector(".flip__prev").addEventListener("click", () => flip(-1));
+    sec.querySelector(".flip__next").addEventListener("click", () => flip(1));
+
+    // Drag folds the page in real time; a still tap opens the full-screen zoom.
+    let dragging = false, startX = 0, moved = false, drag = null;
+    stage.addEventListener("pointerdown", (e) => {
+      if (busy) return;
+      dragging = true; moved = false; startX = e.clientX; drag = null;
+      try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      if (!moved && Math.abs(dx) > 6 && N > 1 && !reduce) {
+        moved = true; busy = true;
+        drag = begin(dx < 0 ? 1 : -1);
+      }
+      if (drag) {
+        const p = Math.max(0, Math.min(1, Math.abs(dx) / (stage.clientWidth || 1)));
+        setAngle(drag.leaf, START(drag.dir) + (END(drag.dir) - START(drag.dir)) * p);
+      }
+    });
+    const endDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      if (drag) {
+        tween(drag, Math.abs(drag.leaf._angle) / 180 > 0.28);   // past ~a quarter completes
+        drag = null;
+      } else if (!moved) {
+        openZoom(at(index));                                     // tap = expand
+      }
+    };
+    stage.addEventListener("pointerup", endDrag);
+    stage.addEventListener("pointercancel", endDrag);
+
+    // Arrow keys when the sketchbook is hovered or focused within.
+    let hot = false;
+    sec.addEventListener("pointerenter", () => { hot = true; });
+    sec.addEventListener("pointerleave", () => { hot = false; });
+    sec.addEventListener("focusin", () => { hot = true; });
+    sec.addEventListener("focusout", () => { hot = false; });
+    document.addEventListener("keydown", (e) => {
+      if (!hot || busy) return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); flip(-1); }
+      else if (e.key === "ArrowRight") { e.preventDefault(); flip(1); }
+    });
+
+    return sec;
+  }
+
   /* ---------- Render work ---------- */
   const work = document.getElementById("work");
 
@@ -51,6 +228,11 @@
       const p = v.play();
       if (p && p.catch) p.catch(() => {});
     });
+
+    // Home page: a "My sketchbook" flip-through under the project cards
+    if (!only && Array.isArray(PORTFOLIO.sketchbook) && PORTFOLIO.sketchbook.length) {
+      work.appendChild(buildSketchbook(PORTFOLIO.sketchbook));
+    }
   }
 
   /* ---------- Reveal on scroll ---------- */
@@ -329,26 +511,11 @@
   const lbCap = lb.querySelector(".lb__cap");
   const btnClose = lb.querySelector(".lb__close");
 
-  // Click-to-expand overlay for grid galleries (built once, reused).
-  const lbZoom = document.createElement("div");
-  lbZoom.className = "lb__zoom";
-  lbZoom.setAttribute("aria-hidden", "true");
-  lbZoom.innerHTML = '<img alt="" />';
-  lb.appendChild(lbZoom);
-  const lbZoomImg = lbZoom.querySelector("img");
-  const closeZoom = () => {
-    lbZoom.classList.remove("open");
-    lbZoom.setAttribute("aria-hidden", "true");
-    lbZoomImg.removeAttribute("src");
-  };
-  lbZoom.addEventListener("click", closeZoom);
+  // Grid gallery images expand into the shared full-screen zoom.
   lbStack.addEventListener("click", (e) => {
     if (!lbStack.classList.contains("lb__stack--grid")) return;
     const img = e.target.closest(".lb__img");
-    if (!img) return;
-    lbZoomImg.src = img.currentSrc || img.src;
-    lbZoom.classList.add("open");
-    lbZoom.setAttribute("aria-hidden", "false");
+    if (img) openZoom(img.currentSrc || img.src);
   });
 
   let lastFocus = null;
@@ -401,9 +568,9 @@
     if (e.target === lb || e.target === lbScroll) closeLightbox();
   });
   document.addEventListener("keydown", (e) => {
-    if (!lb.classList.contains("open") || e.key !== "Escape") return;
-    if (lbZoom.classList.contains("open")) closeZoom();
-    else closeLightbox();
+    if (e.key !== "Escape") return;
+    if (zoomEl.classList.contains("open")) { closeZoom(); return; }
+    if (lb.classList.contains("open")) closeLightbox();
   });
 
   // Expose for any inline callers
