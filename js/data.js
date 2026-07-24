@@ -24,6 +24,8 @@ const PORTFOLIO = {
         {
           title: "Dream?",
           note: "Visual development",
+          headline: "Picking up the spray can to reconnect with her mom and find herself.",
+          sub: "Finding her creative spark in the same streets her mom used to paint.",
           cover: "images/dream/01.jpg",
           video: "videos/dream.mp4",
           images: img("dream", [
@@ -34,6 +36,8 @@ const PORTFOLIO = {
         {
           title: "Heavy Bloom",
           note: "Visual development",
+          headline: "Turning the heavy weight of grief into something that actually blooms.",
+          sub: "Figuring out how to create again while missing the person who inspired it all.",
           cover: "images/heavy-bloom/03.webp",
           video: "videos/bloom.mp4",
           images: img("heavy-bloom", [
@@ -44,6 +48,8 @@ const PORTFOLIO = {
         {
           title: "Corner Stop",
           note: "Visual development",
+          headline: "Good coffee, home-cooked food and way too many cats.",
+          sub: "The neighborhood's favorite spot, run by a cat-loving grandma who cooks with love.",
           cover: "images/corner-stop/06.webp",
           images: img("corner-stop", [
             "01.webp", "02.webp", "03.webp", "04.webp",
@@ -83,7 +89,7 @@ const PORTFOLIO = {
           title: "Illustrations",
           note: "Studies & photobashing",
           cover: "images/film-studies/05.jpg",
-          layout: "grid",     // masonry grid viewer + click-to-expand, like Thayyam
+          layout: "grid",     // masonry grid viewer + click-to-expand, like Theyyam
           images: [
             "images/portrait-study/01.png",
             "images/portrait-study/02.jpg",
@@ -109,11 +115,13 @@ const PORTFOLIO = {
       num: "04",
       title: "Film",
       blurb:
-        "Concept art for film: developing the world, mood, and color of Thayyam.",
+        "Concept art for film: developing the world, mood, and color of Theyyam.",
       collections: [
         {
-          title: "Thayyam",
+          title: "Theyyam",
           note: "Concept art",
+          headline: "Partnering with the director to bring the movie's biggest scene to life.",
+          sub: "Crafting the ultimate climax scene alongside the director.",
           cover: "images/concepts/concept-1.jpeg",
           layout: "grid",     // render the viewer as a gallery grid
           cursor: "spark",    // warm sparks instead of ink while this viewer is open

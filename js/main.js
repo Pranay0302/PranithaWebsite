@@ -123,7 +123,7 @@
   }
 
   /* ---------- Cursor trail: ink splots, or warm sparks on Film ---------- */
-  // Base mode follows the page; the Thayyam viewer flips it to sparks on any page.
+  // Base mode follows the page; the Theyyam viewer flips it to sparks on any page.
   const cursorBase = (work && work.dataset.section === "film") ? "spark" : "ink";
   let cursorMode = cursorBase;
   let inkCanvas = null;
@@ -355,7 +355,10 @@
 
   function openLightbox(collection) {
     lastFocus = document.activeElement;
-    lbCap.innerHTML = `<b>${collection.title}</b>`;
+    lbCap.innerHTML =
+      `<b>${collection.title}</b>` +
+      (collection.headline ? `<span class="lb__headline">${collection.headline}</span>` : "") +
+      (collection.sub ? `<span class="lb__sub">${collection.sub}</span>` : "");
 
     const imgs = collection.images
       .map((src, i) =>
